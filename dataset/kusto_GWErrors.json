@@ -1,0 +1,65 @@
+{
+    "name": "kusto_GWErrors",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "kusto_pocasdx",
+            "type": "LinkedServiceReference"
+        },
+        "annotations": [],
+        "type": "AzureDataExplorerTable",
+        "schema": [
+            {
+                "name": "Source",
+                "type": "string"
+            },
+            {
+                "name": "LogType",
+                "type": "string"
+            },
+            {
+                "name": "RequestTime",
+                "type": "datetime"
+            },
+            {
+                "name": "InstanceId",
+                "type": "string"
+            },
+            {
+                "name": "ActivityId",
+                "type": "guid"
+            },
+            {
+                "name": "RequestId",
+                "type": "guid"
+            },
+            {
+                "name": "ActivityType",
+                "type": "string"
+            },
+            {
+                "name": "Filler1",
+                "type": "guid"
+            },
+            {
+                "name": "QueryTrackingId",
+                "type": "guid"
+            },
+            {
+                "name": "Filler2",
+                "type": "guid"
+            },
+            {
+                "name": "Filler3",
+                "type": "string"
+            },
+            {
+                "name": "Description",
+                "type": "string"
+            }
+        ],
+        "typeProperties": {
+            "table": "GWErrors"
+        }
+    },
+    "type": "Microsoft.Synapse/workspaces/datasets"
+}

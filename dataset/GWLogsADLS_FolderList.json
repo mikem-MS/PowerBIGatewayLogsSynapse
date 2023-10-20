@@ -1,0 +1,27 @@
+{
+    "name": "GWLogsADLS_FolderList",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "ADLSGen2Landing",
+            "type": "LinkedServiceReference"
+        },
+        "annotations": [],
+        "type": "Json",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "fileName": "GWLogsADLS_FolderList.json",
+                "fileSystem": "test"
+            }
+        },
+        "schema": {
+            "type": "object",
+            "properties": {
+                "Folder": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "type": "Microsoft.Synapse/workspaces/datasets"
+}
