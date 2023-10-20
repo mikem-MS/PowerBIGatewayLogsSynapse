@@ -1,0 +1,168 @@
+{
+    "name": "Blob to Kusto",
+    "properties": {
+        "activities": [
+            {
+                "name": "Blob list",
+                "type": "Lookup",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "JsonSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "JsonReadSettings"
+                        }
+                    },
+                    "dataset": {
+                        "referenceName": "GWLogsADLS_FolderList",
+                        "type": "DatasetReference"
+                    },
+                    "firstRowOnly": false
+                }
+            },
+            {
+                "name": "Date folders only",
+                "type": "Filter",
+                "dependsOn": [
+                    {
+                        "activity": "Error folders only",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('Error folders only').output.value",
+                        "type": "Expression"
+                    },
+                    "condition": {
+                        "value": "@and(\n    and(\n        and(\n            greaterOrEquals(split(item().Folder,'/')[sub(length(split(item().Folder,'/')),1)],'01'),\n            lessOrEquals(split(item().Folder,'/')[sub(length(split(item().Folder,'/')),1)],'31')\n        ),\n        and(\n            greaterOrEquals(split(item().Folder,'/')[sub(length(split(item().Folder,'/')),2)],'01'),\n            lessOrEquals(split(item().Folder,'/')[sub(length(split(item().Folder,'/')),2)],'12')\n        )\n    ),\n    and(\n        greaterOrEquals(split(item().Folder,'/')[sub(length(split(item().Folder,'/')),3)],'2000'),\n        lessOrEquals(split(item().Folder,'/')[sub(length(split(item().Folder,'/')),3)],'3000')\n    )\n)",
+                        "type": "Expression"
+                    }
+                }
+            },
+            {
+                "name": "Date folder",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "Date folders only",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('Date folders only').output.value",
+                        "type": "Expression"
+                    },
+                    "activities": [
+                        {
+                            "name": "Blob to Kusto",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSReadSettings",
+                                        "recursive": true,
+                                        "wildcardFolderPath": {
+                                            "value": "@item().Folder",
+                                            "type": "Expression"
+                                        },
+                                        "wildcardFileName": "*",
+                                        "enablePartitionDiscovery": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "AzureDataExplorerSink",
+                                    "ingestionMappingName": "",
+                                    "additionalProperties": {
+                                        "value": "@json(\n\tconcat(\n\t\t'{\"creationTime\":\"',\n\t\tsplit(item().Folder,'/')[sub(length(split(item().Folder,'/')),3)],'-',\n\t\tsplit(item().Folder,'/')[sub(length(split(item().Folder,'/')),2)],'-',\n\t\tsplit(item().Folder,'/')[sub(length(split(item().Folder,'/')),1)],\n\t\t'\"}'\n\t)\n)",
+                                        "type": "Expression"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "GWLogsADLS_Sink",
+                                    "type": "DatasetReference"
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "kusto_GWErrors",
+                                    "type": "DatasetReference"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Error folders only",
+                "type": "Filter",
+                "dependsOn": [
+                    {
+                        "activity": "Blob list",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('Blob list').output.value",
+                        "type": "Expression"
+                    },
+                    "condition": {
+                        "value": "@contains(item().Folder,'/Error/')",
+                        "type": "Expression"
+                    }
+                }
+            }
+        ],
+        "annotations": [],
+        "lastPublishTime": "2022-08-21T14:24:38Z"
+    },
+    "type": "Microsoft.Synapse/workspaces/pipelines"
+}
