@@ -1,0 +1,16 @@
+{
+    "name": "kusto_pocasdx",
+    "type": "Microsoft.Synapse/workspaces/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "AzureDataExplorer",
+        "typeProperties": {
+            "endpoint": "https://pocasdx.pocmm.kusto.azuresynapse.net",
+            "database": "bp"
+        },
+        "connectVia": {
+            "referenceName": "AutoResolveIntegrationRuntime",
+            "type": "IntegrationRuntimeReference"
+        }
+    }
+}
